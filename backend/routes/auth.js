@@ -1,10 +1,10 @@
-const Router = require("express").Router();
+const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
-Router.post("/register", async(req, res) => {
+router.post("/register", async(req, res) => {
     const {email, password, name} = req.body;
     try {
         const hashed = await bcrypt.hash(password, 10);
@@ -17,7 +17,7 @@ Router.post("/register", async(req, res) => {
 })
 
 
-Router.post("/login",async(req,res)=> {
+router.post("/login",async(req,res)=> {
     const {email, password} = req.body;
 
     try {
@@ -40,10 +40,9 @@ Router.post("/login",async(req,res)=> {
 })
 
 
-Router.post("/logout", (req, res) => {
+router.post("/logout", (req, res) => {
     res.clearCookie("token");
     res.json({message: "Logged Out"});
 })
 
-
-export default Router;
+module.exports = router
