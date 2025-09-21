@@ -1,6 +1,6 @@
 const express=  require ("express")
 const Agent = require ("../models/Agent.js")
-const {authMiddleware} = require ("../middleware/auth.js")
+const authMiddleware = require ("../middleware/auth.js")
 
 const router = express.Router();
 router.post("/", authMiddleware, async (req,res) => {

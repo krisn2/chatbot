@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const {authMiddleware} = require("../middleware/auth")
+const authMiddleware = require("../middleware/auth")
 const Project = require("../models/Project");
 
 router.post("/",authMiddleware, async (req,res)=> {
