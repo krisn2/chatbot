@@ -2,30 +2,36 @@ const express = require("express");
 const Chat = require("../models/Chat.js");
 const Agent = require("../models/Agent.js");
 const authMiddleware = require("../middleware/auth.js");
+const { z } = require("zod")
+const validate = require("../middleware/validate.js")
 
 const Groq = require("groq-sdk");
 
 const router = express.Router();
 
+
+const ParamsAgentSchema  =  z.object({
+    agentId : z.string().regex(/^[0-9a-fA-F]{24}$/,"Invalid agentId")
+})
+
+const ChatBodySchema = z.object({
+    msg : z.string().min(1, "Message required")
+})
+
 // Send a message to an agent and get AI response
-router.post("/:agentId", authMiddleware, async (req, res) => {
+router.post("/:agentId", authMiddleware, validate(ParamsAgentSchema, "params"), validate( ChatBodySchema ), async (req, res) => {
     try {
         const { msg } = req.body;
         const agentId = req.params.agentId;
 
-        if (!msg) return res.status(400).json({ error: "Message required" });
-
         const agent = await Agent.findById(agentId);
         if (!agent) return res.status(404).json({ error: "Agent not found" });
 
-        // find or create chat
         let chat = await Chat.findOne({ agentId, userId: req.userId });
         if (!chat) chat = new Chat({ agentId, userId: req.userId, messages: [] });
 
-        // push user message
         chat.messages.push({ role: "user", content: msg });
 
-        // construct LLM messages
         const messagesForLLM = [];
 
         if (agent.prompt && agent.prompt.system) {
@@ -34,7 +40,7 @@ router.post("/:agentId", authMiddleware, async (req, res) => {
 
         if (agent.prompt && agent.prompt.examples) {
             const examples = agent.prompt.examples.map((e) => ({
-                role: e.role === "agent" ? "assistant" : e.role, // normalize roles
+                role: e.role === "agent" ? "assistant" : e.role, 
                 content: e.content,
             }));
             messagesForLLM.push(...examples);
@@ -59,7 +65,7 @@ router.post("/:agentId", authMiddleware, async (req, res) => {
 
         const chatCompletion = await client.chat.completions.create(params);
 
-        console.log("Groq API response:", JSON.stringify(chatCompletion, null, 2));
+        // console.log("Groq API response:", JSON.stringify(chatCompletion, null, 2));
 
         if (!chatCompletion.choices || chatCompletion.choices.length === 0) {
             return res.status(500).json({
@@ -68,7 +74,6 @@ router.post("/:agentId", authMiddleware, async (req, res) => {
             });
         }
 
-        // extract assistant reply
         const agentReply =
             chatCompletion.choices[0].message?.content ||
             chatCompletion.choices[0].text ||

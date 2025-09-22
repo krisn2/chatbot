@@ -6,11 +6,19 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// ensure uploads folder exists
+const validate = require("../middleware/validate")
+
+const { z } = require("zod");
+
+const ProjectSchema = z.object({
+  name: z.string().min(1, "Project name required"),
+  description: z.string()
+});
+
 const uploadsDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir);
 
-// configure multer storage
+
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadsDir);
@@ -22,7 +30,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware, validate(ProjectSchema), async (req, res) => {
   const { name, description } = req.body;
 
   try {
@@ -46,7 +54,6 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
-// upload files for a project
 router.post("/:projectId/files", authMiddleware, upload.single("file"), async (req, res) => {
   try {
     const { projectId } = req.params;

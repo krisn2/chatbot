@@ -1,28 +1,25 @@
 const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { z } = require("zod")
 
 const User = require("../models/User");
+const validate = require("../middleware/validate");
 
-// simple email regex (practical for signup validation)
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-router.post("/register", async (req, res) => {
+const RegisterSchema = z.object({
+  email : z.string().email(),
+  password : z.string().min(8).max(20),
+  name : z.string().optional()
+})
+
+const LoginSchema = z.object({
+  email : z.string().email(),
+  password : z.string().min(1),
+})
+
+router.post("/register",validate(RegisterSchema) ,async (req, res) => {
   const { email, password, name } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
-  }
-
-  if (!emailRegex.test(email)) {
-    return res.status(400).json({ error: "Invalid email format" });
-  }
-
-  if (password.length < 8 || password.length > 20) {
-    return res
-      .status(400)
-      .json({ error: "Password must be between 8 and 20 characters" });
-  }
 
   try {
     const existing = await User.findOne({ email });
@@ -39,12 +36,10 @@ router.post("/register", async (req, res) => {
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", validate(LoginSchema), async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    if (!email || !password)
-      return res.status(400).json({ error: "Email and password required" });
 
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "User not found" });
