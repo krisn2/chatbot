@@ -1,36 +1,41 @@
-import React from 'react';
-import { useRecoilValue } from 'recoil';
-import LoginScreen from './components/LoginScreen';
-import RegisterScreen from './components/RegisterScreen';
-import Dashboard from './components/Dashboard';
-import ChatScreen from './components/ChatScreen';
-import { viewState } from './recoil/atmos';
+import React, { useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Navbar from './components/Navbar'
+import Register from './pages/Register'
+import Login from './pages/Login'
+import Projects from './pages/Projects'
+import ProjectDetail from './pages/ProjectDetail'
+import Chat from './pages/Chat'
+import ProtectedRoute from './components/ProtectedRoute'
+import api from './api/axios'
+import { useSetRecoilState } from 'recoil'
+import { userState } from './state/atoms'
 
-const App = () => {
-  const view = useRecoilValue(viewState);
+export default function App(){
+  const setUser = useSetRecoilState(userState)
 
-  const renderView = () => {
-    switch (view) {
-      case 'login':
-        return <LoginScreen />;
-      case 'register':
-        return <RegisterScreen />;
-      case 'dashboard':
-        return <Dashboard />;
-      case 'chat':
-        return <ChatScreen />;
-      default:
-        return <LoginScreen />;
-    }
-  };
+  useEffect(()=>{
+    // Try to fetch a /auth/me endpoint if available to get current user
+    api.get('/auth/me').then(res=>{
+      setUser(res.data.user)
+    }).catch(()=>{
+      setUser(null)
+    })
+  }, [])
 
   return (
-    <div className="bg-gray-100 min-h-screen py-10 px-4 sm:px-6 lg:px-8 flex justify-center items-start">
-      <div className="max-w-4xl w-full bg-white rounded-xl shadow-lg p-8 sm:p-10 lg:p-12">
-        {renderView()}
-      </div>
-    </div>
-  );
-};
+    <div className="min-h-screen">
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Navigate to="/projects" replace />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
 
-export default App;
+        <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
+        <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+        <Route path="/agents" element={<ProtectedRoute><Navigate to="/projects" replace /></ProtectedRoute>} />
+        <Route path="/chat/:agentId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+      </Routes>
+    </div>
+  )
+}
