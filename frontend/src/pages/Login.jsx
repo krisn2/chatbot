@@ -4,35 +4,65 @@ import { useSetRecoilState } from 'recoil'
 import { userState } from '../state/atoms'
 import { login } from '../utils/auth'
 
-export default function Login(){
+export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const setUser = useSetRecoilState(userState)
   const nav = useNavigate()
 
-  async function submit(e){
-    e.preventDefault()
-    setError(null)
-    try{
-      const res = await login(form)
-      // backend sets cookie — optionally returns user
-      if(res.data.user) setUser(res.data.user)
-      // fetch projects page
-      nav('/projects')
-    }catch(err){
-      setError(err?.response?.data?.message || 'Login failed')
+ async function submit(e) {
+  e.preventDefault()
+  setError(null)
+  try {
+    const res = await login(form)
+    if (res.data.user) {
+      setUser(res.data.user)              
+      localStorage.setItem('user', JSON.stringify(res.data.user)) 
     }
+    nav('/projects')
+  } catch (err) {
+    setError(err?.response?.data?.message || 'Login failed')
   }
+}
 
   return (
-    <div className="max-w-md mx-auto mt-12 bg-white p-6 rounded shadow">
-      <h2 className="text-2xl mb-4">Login</h2>
-      <form onSubmit={submit} className="flex flex-col gap-3">
-        <input value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="Email" className="border p-2 rounded" />
-        <input value={form.password} onChange={e=>setForm({...form,password:e.target.value})} type="password" placeholder="Password" className="border p-2 rounded" />
-        {error && <div className="text-red-500">{error}</div>}
-        <button className="bg-blue-600 text-white py-2 rounded">Login</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-50 to-white px-4">
+      <div className="w-full max-w-md bg-white border border-yellow-200 shadow-lg rounded-2xl p-8">
+        <h2 className="text-3xl font-bold text-center text-yellow-600 mb-6">
+          Welcome Back
+        </h2>
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <input
+            value={form.email}
+            onChange={e => setForm({ ...form, email: e.target.value })}
+            placeholder="Email"
+            className="border border-yellow-200 focus:border-yellow-400 focus:ring focus:ring-yellow-100 p-3 rounded-lg outline-none transition"
+          />
+          <input
+            value={form.password}
+            onChange={e => setForm({ ...form, password: e.target.value })}
+            type="password"
+            placeholder="Password"
+            className="border border-yellow-200 focus:border-yellow-400 focus:ring focus:ring-yellow-100 p-3 rounded-lg outline-none transition"
+          />
+          {error && (
+            <div className="text-red-500 text-sm bg-red-50 p-2 rounded-md">
+              {error}
+            </div>
+          )}
+          <button
+            className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-lg shadow-md transition transform hover:scale-[1.02]"
+          >
+            Login
+          </button>
+        </form>
+        <p className="text-center text-gray-500 text-sm mt-6">
+          Don’t have an account?{' '}
+          <span className="text-yellow-600 hover:underline cursor-pointer">
+            Sign Up
+          </span>
+        </p>
+      </div>
     </div>
   )
 }

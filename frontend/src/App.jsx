@@ -1,4 +1,4 @@
-// import React, { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Register from './pages/Register'
@@ -7,21 +7,18 @@ import Projects from './pages/Projects'
 import ProjectDetail from './pages/ProjectDetail'
 import Chat from './pages/Chat'
 import ProtectedRoute from './components/ProtectedRoute'
-// import api from './api/axios'
-// import { useSetRecoilState } from 'recoil'
-// import { userState } from './state/atoms'
+import api from './api/axios'
+import { useSetRecoilState } from 'recoil'
+import { userState } from './state/atoms'
 
 export default function App(){
-  // const setUser = useSetRecoilState(userState)
 
-  // useEffect(()=>{
-  //   // Try to fetch a /auth/me endpoint if available to get current user
-  //   api.get('/auth/me').then(res=>{
-  //     setUser(res.data.user)
-  //   }).catch(()=>{
-  //     setUser(null)
-  //   })
-  // }, [])
+    const setUser = useSetRecoilState(userState)
+
+  useEffect(() => {
+     const storedUser = localStorage.getItem('user')
+    if (storedUser) setUser(JSON.parse(storedUser))
+  }, [setUser])
 
   return (
     <div className="min-h-screen">
