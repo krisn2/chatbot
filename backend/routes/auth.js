@@ -5,6 +5,7 @@ const { z } = require("zod")
 
 const User = require("../models/User");
 const validate = require("../middleware/validate");
+const authMiddleware= require("../middleware/auth")
 
 
 const RegisterSchema = z.object({
@@ -59,6 +60,16 @@ router.post("/login", validate(LoginSchema), async (req, res) => {
     });
 
     res.json({ message: "login successful", user: { id: user.id, email: user.email, name: user.name } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("id email name");
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json({ user });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

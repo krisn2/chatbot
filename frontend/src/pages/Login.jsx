@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate , Link} from 'react-router-dom'
 import { useSetRecoilState } from 'recoil'
 import { userState } from '../state/atoms'
 import { login } from '../utils/auth'
@@ -59,7 +59,9 @@ export default function Login() {
         <p className="text-center text-gray-500 text-sm mt-6">
           Don’t have an account?{' '}
           <span className="text-yellow-600 hover:underline cursor-pointer">
+          <Link to='/register'>
             Sign Up
+          </Link>
           </span>
         </p>
       </div>
