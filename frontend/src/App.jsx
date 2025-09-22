@@ -33,7 +33,6 @@ export default function App(){
 
         <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
         <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-        <Route path="/agents" element={<ProtectedRoute><Navigate to="/projects" replace /></ProtectedRoute>} />
         <Route path="/chat/:agentId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
       </Routes>
     </div>
