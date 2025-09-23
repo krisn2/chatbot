@@ -74,22 +74,21 @@ export default function Chat() {
     }
   }, [messages])
 
-  // Fetch existing chat with this agent
-  useEffect(() => {
+useEffect(() => {
     async function fetchChat() {
       try {
-        // Fetch all chats and find the one for this agent
-        const res = await api.get('/chat')
-        const chat = res.data.find(c => c.agentId._id === agentId)
-        if (chat) setMessages(chat.messages)
-        setLoading(false)
+        // Now it fetches a single chat directly by its agentId
+        const res = await api.get(`/chat/${agentId}`) 
+        setMessages(res.data.messages);
+        setLoading(false);
       } catch (e) {
-        console.error(e)
-        setLoading(false)
+        console.error(e);
+        setMessages([]); // Set to empty array if no chat is found
+        setLoading(false);
       }
     }
-    fetchChat()
-  }, [agentId])
+    fetchChat();
+}, [agentId]);
 
   async function sendMessage(e) {
     e.preventDefault()

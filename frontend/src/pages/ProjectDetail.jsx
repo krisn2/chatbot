@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import api from '../api/axios'
 
 export default function ProjectDetail() {
-  const { id } = useParams()  // id from URL
+  const { id } = useParams() // id from URL
   const [project, setProject] = useState(null)
   const [agents, setAgents] = useState([])
   const [agentForm, setAgentForm] = useState({
@@ -35,10 +35,9 @@ export default function ProjectDetail() {
         const res = await api.get(`/agents/${project._id}`)
         setAgents(res.data)
       } catch (e) {
-        console.error(e)
+        console.error("fetch agents error:", e)
       }
     }
-
     fetchAgents()
   }, [project])
 

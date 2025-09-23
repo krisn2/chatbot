@@ -36,4 +36,20 @@ router.get("/", authMiddleware, async (req, res, next) => {
   }
 });
 
+router.get("/:projectId", validate(ProjectSchema, 'params'), authMiddleware, async (req, res) => {
+  try {
+    const project = await Project.findOne({
+      _id: req.validatedData.projectId,
+      userId: req.user.id
+    });
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    res.json(project);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;

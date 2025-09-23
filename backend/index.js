@@ -22,8 +22,6 @@ app.use(cors({
 }));
 
 
-app.use("/uploads", express.static(__dirname + "/uploads"));
-
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);

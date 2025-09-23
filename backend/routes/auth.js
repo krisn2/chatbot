@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const { z } = require("zod")
 
 const User = require("../models/User");
-const validate = require("../middleware/validate");
+const validate = require("../middleware/validate.js");
 const authMiddleware= require("../middleware/auth")
 
 
@@ -19,7 +19,7 @@ const LoginSchema = z.object({
   password : z.string().min(1),
 })
 
-router.post("/register",validate(RegisterSchema) ,async (req, res) => {
+router.post("/register", validate(RegisterSchema) , async (req, res) => {
   const { email, password, name } = req.body;
 
   try {
@@ -54,10 +54,10 @@ router.post("/login", validate(LoginSchema), async (req, res) => {
     });
 
     res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production"
-    });
+  httpOnly: true,
+  sameSite: "none", 
+  secure: true // MUST be true for SameSite=None
+});
 
     res.json({ message: "login successful", user: { id: user.id, email: user.email, name: user.name } });
   } catch (err) {

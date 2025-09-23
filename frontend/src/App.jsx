@@ -8,47 +8,51 @@ import ProjectDetail from './pages/ProjectDetail'
 import Chat from './pages/Chat'
 import ProtectedRoute from './components/ProtectedRoute'
 import api from './api/axios'
-import { useSetRecoilState } from 'recoil'
+import { useSetRecoilState, useRecoilValue } from 'recoil'
 import { userState } from './state/atoms'
 
 export default function App() {
   const setUser = useSetRecoilState(userState)
+  const user = useRecoilValue(userState) // Get the current user state
   const nav = useNavigate()
   const location = useLocation()
-  const [loading, setLoading] = useState(true) 
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Skip session validation on auth pages
-    if (['/login', '/register'].includes(location.pathname)) {
-      setLoading(false)
-      return
-    }
-
+ useEffect(() => {
+    // Check session on every app load unless on login/register pages
     async function checkSession() {
       try {
-        const res = await api.get('/auth/me')
+        const res = await api.get('/auth/me');
         if (res.data.user) {
-          setUser(res.data.user)
-          localStorage.setItem('user', JSON.stringify(res.data.user))
+          setUser(res.data.user);
+          localStorage.setItem('user', JSON.stringify(res.data.user));
         } else {
-          setUser(null)
-          localStorage.removeItem('user')
-          nav('/login')
+          setUser(null);
+          localStorage.removeItem('user');
+          // No navigation needed here, ProtectedRoute will handle it
         }
       } catch {
-        setUser(null)
-        localStorage.removeItem('user')
-        nav('/login')
+        setUser(null);
+        localStorage.removeItem('user');
+        // No navigation needed here
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    checkSession()
-  }, [setUser, nav, location.pathname])
+
+    // Only check if the user is not in state and not on login/register pages
+    if (!user && !['/login', '/register'].includes(location.pathname)) {
+        checkSession();
+    } else {
+        setLoading(false);
+    }
+
+  }, [setUser, nav, location.pathname, user]);
 
   if (loading) {
-    return <div className="min-h-screen flex justify-center items-center">Loading...</div> // 👈 Render a loading state
+    return <div className="min-h-screen flex justify-center items-center">Loading...</div>
   }
+
 
   return (
     <div className="min-h-screen">

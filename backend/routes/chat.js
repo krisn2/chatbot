@@ -18,6 +18,19 @@ const ChatBodySchema = z.object({
     msg : z.string().min(1, "Message required")
 })
 
+
+router.get("/:agentId", authMiddleware, async (req, res) => {
+    try {
+        const chat = await Chat.findOne({ agentId: req.params.agentId });
+        if (!chat) {
+            return res.status(404).json({ message: "Chat not found" });
+        }
+        res.json(chat);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Send a message to an agent and get AI response
 router.post("/:agentId", authMiddleware, validate(ParamsAgentSchema, "params"), validate( ChatBodySchema ), async (req, res) => {
     try {
